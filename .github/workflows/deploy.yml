@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Получение кода из репозитория
         uses: actions/checkout@v4
+        
+      - name: Make test.sh executable
         run: chmod +x test.sh
 
       - name: Запуск тестового скрипта
