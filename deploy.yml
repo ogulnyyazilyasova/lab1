@@ -1,0 +1,51 @@
+name: CI/CD Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Получение кода из репозитория
+        uses: actions/checkout@v4
+
+      - name: Запуск тестового скрипта
+        run: bash test.sh
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Получение кода из репозитория
+        uses: actions/checkout@v4
+
+      - name: Настройка GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Подготовка файлов сайта
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Публикация сайта
+        id: deployment
+        uses: actions/deploy-pages@v4

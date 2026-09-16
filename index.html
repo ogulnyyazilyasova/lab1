@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Lab</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f5f7;
+            color: #222;
+        }
+        header {
+            background: #1f2937;
+            color: white;
+            padding: 45px 20px;
+            text-align: center;
+        }
+        main {
+            max-width: 850px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        section {
+            background: white;
+            margin-bottom: 20px;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Мое web-решение</h1>
+        <p>Сайт развернут с использованием GitHub Actions и CI/CD.</p>
+    </header>
+
+    <main>
+        <section>
+            <h2>Описание проекта</h2>
+            <p>Это учебное web-решение для демонстрации автоматического тестирования и публикации сайта.</p>
+        </section>
+
+        <section>
+            <h2>CI/CD</h2>
+            <p>При отправке изменений в ветку main запускается тест. Если тест успешен, сайт публикуется через GitHub Pages.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>Лабораторная работа по развертыванию web-решения</p>
+    </footer>
+</body>
+</html>
