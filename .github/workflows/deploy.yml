@@ -1,4 +1,4 @@
-name: CI/CD to opozdal.ru
+name: CI/CD Deploy
 
 on:
   push:
@@ -8,62 +8,45 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  # ШАГ 1: Проверка текста в opozdun.scr
   check:
     runs-on: ubuntu-latest
     outputs:
       should_deploy: ${{ steps.check_text.outputs.result }}
     steps:
-      - name: Получение кода из репозитория
-        uses: actions/checkout@v4
-
-      - name: Запуск тестового скрипта
+      - uses: actions/checkout@v4
+      - name: Запуск проверки opozdun.scr
         id: check_text
         run: |
           chmod +x test.sh
           if ./test.sh; then
             echo "result=deploy" >> $GITHUB_OUTPUT
           else
-            echo "result=delete" >> $GITHUB_OUTPUT
+            echo "result=skip" >> $GITHUB_OUTPUT
           fi
 
-  # ШАГ 2: Разворачивание на opozdal.ru (если тест пройден)
   deploy:
     needs: check
     runs-on: ubuntu-latest
     if: needs.check.outputs.should_deploy == 'deploy'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Получение кода из репозитория
-        uses: actions/checkout@v4
-
-      - name: Разворачивание приложения на opozdal.ru
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H opozdal.ru >> ~/.ssh/known_hosts
-          
-          echo ">>> Копирование файлов на opozdal.ru..."
-          # ЗАМЕНИТЕ /var/www/html/ НА ПУТЬ ИЗ ВАШЕЙ 2-й ЛАБОРАТОРНОЙ
-          scp -r index.html opozdun.scr ${{ secrets.SSH_USER }}@opozdal.ru:/var/www/html/
-          echo ">>> Деплой на opozdal.ru завершен!"
-
-  # ШАГ 3: Удаление с opozdal.ru (если тест провален)
-  delete:
-    needs: check
-    runs-on: ubuntu-latest
-    if: needs.check.outputs.should_deploy == 'delete'
-    steps:
-      - name: Удаление приложения с opozdal.ru
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H opozdal.ru >> ~/.ssh/known_hosts
-          
-          echo ">>> Удаление файлов с opozdal.ru..."
-          # ЗАМЕНИТЕ /var/www/html/ НА ПУТЬ ИЗ ВАШЕЙ 2-й ЛАБОРАТОРНОЙ
-          ssh ${{ secrets.SSH_USER }}@opozdal.ru "rm -rf /var/www/html/index.html /var/www/html/opozdun.scr"
-          echo ">>> Файлы удалены с opozdal.ru!"
+      - uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
